@@ -1,6 +1,7 @@
 # SuperCache
 
-TODO: Write a gem description
+SuperCache for rails is a caching middleware inspired by the "SuperCache" plugin
+for WordPress.
 
 ## Installation
 

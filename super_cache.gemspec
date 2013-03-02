@@ -8,9 +8,9 @@ Gem::Specification.new do |gem|
   gem.version       = SuperCache::VERSION
   gem.authors       = ["ShiningRay"]
   gem.email         = ["tsowly@hotmail.com"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
-  gem.homepage      = ""
+  gem.description   = %q{A simple caching middleware for rails}
+  gem.summary       = %q{A simple caching middleware for rails}
+  gem.homepage      = "https://github.com/shiningray/super_cache"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
