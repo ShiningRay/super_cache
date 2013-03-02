@@ -1,5 +1,8 @@
+# encoding: UTF-8
+
 require "bundler/gem_tasks"
 require 'rake/testtask'
+require 'rdoc/task'
 
 Rake::TestTask.new do |t|
   t.libs << 'test'

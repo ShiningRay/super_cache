@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ShiningRay/super_cache.png?branch=master)](https://travis-ci.org/ShiningRay/super_cache)
+
 # SuperCache
 
 SuperCache for rails is a caching middleware inspired by the "SuperCache" plugin
