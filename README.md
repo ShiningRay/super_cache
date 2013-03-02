@@ -19,7 +19,19 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Just call `super_caches_page` inside your controller with the action names to be cached.
+
+```ruby
+class MyController < ApplicationController
+  super_caches_page :index
+  def index
+    # action to be 
+  edn
+end
+```
+
+Super_cache will store the response body into `Rails.cache`. The next time requesting
+that action will get the same result.
 
 ## Contributing
 
