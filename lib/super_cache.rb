@@ -50,8 +50,8 @@ module SuperCache
     return if request.format.to_sym == :mobile
     @cache_path ||= weird_cache_path
     @expires_in ||= 600
-    return if response.body.size <= 1
-    return if response.respond_to?(:status) and response.status.to_i != 200
+    #return if response.body.size <= 1
+    return if response.status.to_i != 200
     #benchmark "Super Cached page: #{@cache_path}" do
     #  @cache_subject = Array(@cache_subject)
     #  @cache_subject.compact.flatten.select{|s|s.respond_to?(:append_cached_key)}.each do |subject|
@@ -70,7 +70,7 @@ module SuperCache
       request.format ||= :html
       format = request.format.to_sym
       path = "#{path}.#{format}" if format != :html and format != :all and params[:format].blank?
-      path = "#{path}?#{q}" #if !q.empty? && q =~ /=/
+      path = "#{path}?#{q}" if !q.empty? && q =~ /=/
       path
     end
 end
