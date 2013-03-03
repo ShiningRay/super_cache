@@ -4,7 +4,7 @@ require 'bundler'
 Bundler.setup
 
 require 'test/unit'
-require 'mocha/setup'
+#require 'mocha/setup'
 
 ENV["RAILS_ENV"] = "test"
 RAILS_ROOT = "anywhere"

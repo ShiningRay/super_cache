@@ -4,4 +4,4 @@ source 'http://rubygems.org'
 gemspec
 gem 'rake'
 gem 'rails', '~> 3.1'
-gem 'mocha', :require => false
+#gem 'mocha', :require => false
