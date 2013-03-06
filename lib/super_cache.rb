@@ -7,6 +7,8 @@ module SuperCache
   def self.included(base)
     base.extend(ClassMethods)
   end
+  autoload :Lock, 'super_cache/lock'
+  autoload :DogPileFilter, 'super_cache/dog_pile_filter'
 
   module ClassMethods
     def super_caches_page(*pages)
@@ -21,6 +23,7 @@ module SuperCache
       options = pages.extract_options!
       options[:only] = (Array(options[:only]) + pages).flatten
       skip_before_filter :check_weird_cache, options
+      skip_before_filter :check_weird_cache_with_lock, options
       skip_after_filter :weird_cache, options
     end
   end
@@ -30,7 +33,7 @@ module SuperCache
     @cache_path ||= weird_cache_path
     
     if content = Rails.cache.read(@cache_path, :raw => true)
-      return if content.size <= 1
+      return if content.size <= 0
       logger.info "Hit #{@cache_path}"
 
       headers['Content-Length'] ||= content.size.to_s
