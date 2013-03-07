@@ -4,19 +4,24 @@ require 'fileutils'
 # for static-caching the generated html pages
 
 module SuperCache
+  autoload :Lock, 'super_cache/lock'
+  autoload :DogPileFilter, 'super_cache/dog_pile_filter'
+
   def self.included(base)
     base.extend(ClassMethods)
   end
-  autoload :Lock, 'super_cache/lock'
-  autoload :DogPileFilter, 'super_cache/dog_pile_filter'
 
   module ClassMethods
     def super_caches_page(*pages)
       return unless perform_caching
       options = pages.extract_options!
       options[:only] = (Array(options[:only]) + pages).flatten
-      before_filter :check_weird_cache, options
-      after_filter :weird_cache, options
+      if options.delete(:lock)
+        around_filter DogPileFilter.new
+      else
+        before_filter :check_weird_cache, options
+        after_filter :weird_cache, options
+      end
     end
 
     def skip_super_caches_page(*pages)

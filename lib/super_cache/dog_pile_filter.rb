@@ -12,8 +12,10 @@ module SuperCache
     # 3.3 go to the action and obtain response body
     # 3.4 store the response body to the target key and set the expiration with 2x longer
     # 3.5 store the expireation info of target key
-    def filter
-      return unless perform_caching
+    def filter(controller, action=nil, &block)
+      @controller = controller
+      @action = action || block
+      return @action.call unless controller.perform_caching
       @cache_path ||= weird_cache_path
       @expires_at_key = "expires_at:#{@cache_path}"
       @expires_in ||= 600
@@ -28,13 +30,13 @@ module SuperCache
 
     protected
     def write_cache
-      return if response.status.to_i != 200
+      return if @controller.response.status.to_i != 200
       Rails.cache.write(@expires_at_key, @expires_in.to_i, :raw => true, :expires_in => @expires_in.to_i)
-      Rails.cache.write(@cache_path, response.body, :raw => true, :expires_in => @expires_in.to_i * 2)      
+      Rails.cache.write(@cache_path, @controller.response.body, :raw => true, :expires_in => @expires_in.to_i * 2)      
     end
 
     def check_cache
-      if content = Rails.cache.read(@cache_path, :raw => true) && content.size > 0
+      if @content = Rails.cache.read(@cache_path, :raw => true) and @content.size > 0
         cache_hit
       else
         cache_miss
@@ -42,33 +44,42 @@ module SuperCache
     end    
 
     def cache_hit 
-      logger.info "Hit #{@cache_path}"
-
-      headers['Content-Length'] ||= content.size.to_s
-      headers['Content-Type'] ||= request.format.to_s.strip unless  request.format == :all
-      render :text => content, :content_type => 'text/html'
+      Rails.logger.info "Hit #{@cache_path}"
+      @controller.headers['Content-Length'] ||= @content.size.to_s
+      @controller.headers['Content-Type'] ||= @controller.request.format.to_s.strip unless  @controller.request.format == :all
+      @controller.render :text => @content, :content_type => 'text/html'
     end
 
     #when the target cache is not established yet
     def cache_miss 
       Lock.synchronize(@cache_path) do
-        yield
+        @action.call
         write_cache
       end
     rescue Lock::MaxRetriesError
-      yield
+      @action.call
       write_cache
     end
 
     # the cache is expired
     def cache_expired 
       if Lock.acquire_lock(@cache_path)
-        yield
+        @action.call
         write_cache
       else
         # haven't acquired lock, return stale cache
         check_cache
       end
+    end
+
+    def weird_cache_path
+      path = File.join @controller.request.host, @controller.request.path
+      q = @controller.request.query_string
+      @controller.request.format ||= :html
+      format = @controller.request.format.to_sym
+      path = "#{path}.#{format}" if format != :html and format != :all and @controller.params[:format].blank?
+      path = "#{path}?#{q}" if !q.empty? && q =~ /=/
+      path
     end    
   end
 end

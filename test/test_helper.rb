@@ -18,8 +18,9 @@ I18n.reload!
 
 class ApplicationController < ActionController::Base; end
 class Rails
-  cattr_accessor :cache
+  cattr_accessor :cache, :logger
   @@cache = ActiveSupport::Cache::MemoryStore.new
+  @@logger = Logger.new($stderr)
 end
 # Add IR to load path and load the main file
 $:.unshift File.expand_path(File.dirname(__FILE__) + '/../lib')
