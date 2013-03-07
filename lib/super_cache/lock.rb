@@ -37,7 +37,7 @@ module SuperCache
 
       private
       def recursive_lock?(key)
-        Rails.cache.get("lock/#{key}") == Process.pid
+        Rails.cache.read("lock/#{key}") == Process.pid
       end
     end
   end
