@@ -41,5 +41,6 @@ ActionController::Base.send :include, SuperCache::Routes.url_helpers
 class ActiveSupport::TestCase
   setup do
     @routes = SuperCache::Routes
+    @request.host = 'test.my'
   end
 end
