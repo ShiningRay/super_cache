@@ -1,5 +1,9 @@
 module SuperCache
   class DogPileFilter
+    attr_accessor :options
+    def initialize(options={})
+      self.options = options
+    end
     # 1. check the expiration info of target key
     # 2. if target key is expired, add a lock against target key
     # 2.1 if not expired, return the cache
@@ -13,71 +17,82 @@ module SuperCache
     # 3.4 store the response body to the target key and set the expiration with 2x longer
     # 3.5 store the expireation info of target key
     def filter(controller, action=nil, &block)
-      @controller = controller
-      @action = action || block
-      return @action.call unless controller.perform_caching
-      @cache_path ||= weird_cache_path
-      @expires_at_key = "expires_at:#{@cache_path}"
-      @expires_in ||= 600
-      @content = nil
+      action ||= block
+      return action.call unless controller.perform_caching
+      options = self.options.dup
 
-      if Rails.cache.read(@expires_at_key, :raw => true) 
-        check_cache
+      options[:controller] = controller
+      options[:action] = action || block
+      options[:cache_path] ||= weird_cache_path(options)
+      options[:flag_key] = "expires_at:#{@cache_path}"
+      options[:expires_in] ||= 600
+      options[:content] = nil
+
+      if Rails.cache.read(options[:flag_key], :raw => true) 
+        check_cache(options)
       else
-        cache_expired
+        cache_expired(options)
       end
     end
 
     protected
-    def write_cache
-      return if @controller.response.status.to_i != 200
-      Rails.cache.write(@expires_at_key, @expires_in.to_i, :raw => true, :expires_in => @expires_in.to_i)
-      Rails.cache.write(@cache_path, @controller.response.body, :raw => true, :expires_in => @expires_in.to_i * 2)      
+    def write_cache(options)
+      response = options[:controller].response
+      return if response.status.to_i != 200
+      expires_in = options[:expires_in].to_i
+      Rails.cache.write(options[:flag_key], expires_in, :raw => true, :expires_in => expires_in)
+      Rails.cache.write(options[:cache_path], response.body, :raw => true, :expires_in => expires_in * 2)      
     end
 
-    def check_cache
-      if @content = Rails.cache.read(@cache_path, :raw => true) and @content.size > 0
-        cache_hit
+    def check_cache(options)
+      if options[:content] = Rails.cache.read(options[:cache_path], :raw => true) and options[:content].size > 0
+        cache_hit(options)
       else
-        cache_miss
+        cache_miss(options)
       end             
     end    
 
-    def cache_hit 
-      Rails.logger.info "Hit #{@cache_path}"
-      @controller.headers['Content-Length'] ||= @content.size.to_s
-      @controller.headers['Content-Type'] ||= @controller.request.format.to_s.strip unless  @controller.request.format == :all
-      @controller.render :text => @content, :content_type => 'text/html'
+    def cache_hit(options)
+      controller = options[:controller]
+      request = controller.request
+      headers = controller.headers
+      content = options[:content]
+      Rails.logger.info "Hit #{options[:cache_path]}"
+      headers['Content-Length'] ||= content.size.to_s
+      headers['Content-Type'] ||= request.format.to_s.strip unless  request.format == :all
+      controller.render :text => content, :content_type => 'text/html'
     end
 
     #when the target cache is not established yet
-    def cache_miss 
-      Lock.synchronize(@cache_path) do
-        @action.call
-        write_cache
+    def cache_miss(options)
+      Lock.synchronize(options[:cache_path]) do
+        options[:action].call
+        write_cache(options)
       end
     rescue Lock::MaxRetriesError
-      @action.call
-      write_cache
+      options[:action].call
+      write_cache(options)
     end
 
     # the cache is expired
-    def cache_expired 
-      if Lock.acquire_lock(@cache_path)
-        @action.call
-        write_cache
+    def cache_expired(options) 
+      if Lock.acquire_lock(options[:cache_path])
+        options[:action].call
+        write_cache(options)
       else
         # haven't acquired lock, return stale cache
-        check_cache
+        check_cache(options)
       end
     end
 
-    def weird_cache_path
-      path = File.join @controller.request.host, @controller.request.path
-      q = @controller.request.query_string
-      @controller.request.format ||= :html
-      format = @controller.request.format.to_sym
-      path = "#{path}.#{format}" if format != :html and format != :all and @controller.params[:format].blank?
+    def weird_cache_path(options)
+      controller = options[:controller]
+      request = controller.request
+      path = File.join request.host, request.path
+      q = request.query_string
+      request.format ||= :html
+      format = request.format.to_sym
+      path = "#{path}.#{format}" if format != :html and format != :all and controller.params[:format].blank?
       path = "#{path}?#{q}" if !q.empty? && q =~ /=/
       path
     end    

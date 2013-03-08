@@ -17,7 +17,9 @@ module SuperCache
       options = pages.extract_options!
       options[:only] = (Array(options[:only]) + pages).flatten
       if options.delete(:lock)
-        around_filter DogPileFilter.new
+        filter_options = {}
+        filter_options.merge!(options.delete_at(:if, :unless))
+        around_filter DogPileFilter.new(options), filter_options
       else
         before_filter :check_weird_cache, options
         after_filter :weird_cache, options
