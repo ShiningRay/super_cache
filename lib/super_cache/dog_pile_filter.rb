@@ -24,7 +24,7 @@ module SuperCache
       options[:controller] = controller
       options[:action] = action || block
       options[:cache_path] ||= weird_cache_path(options)
-      options[:flag_key] = "expires_at:#{@cache_path}"
+      options[:flag_key] = "expires_at:#{options[:cache_path]}"
       options[:expires_in] ||= 600
       options[:content] = nil
 
@@ -60,7 +60,7 @@ module SuperCache
       Rails.logger.info "Hit #{options[:cache_path]}"
       headers['Content-Length'] ||= content.size.to_s
       headers['Content-Type'] ||= request.format.to_s.strip unless  request.format == :all
-      controller.render :text => content, :content_type => 'text/html'
+      controller.send :render, :text => content, :content_type => 'text/html'
     end
 
     #when the target cache is not established yet

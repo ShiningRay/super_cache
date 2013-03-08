@@ -32,7 +32,7 @@ module SuperCache
       end
 
       def exponential_sleep(count)
-        @runtime += Benchmark::measure { sleep((2**count) / 5.0) }
+        Benchmark::measure { sleep((2**count) / 5.0) }
       end
 
       private
