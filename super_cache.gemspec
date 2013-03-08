@@ -9,7 +9,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ["ShiningRay"]
   gem.email         = ["tsowly@hotmail.com"]
   gem.description   = %q{A simple caching middleware for rails}
-  gem.summary       = %q{A simple caching middleware for rails}
+  gem.summary       = %q{A simple caching middleware for rails, with solution for dog-pile effect}
   gem.homepage      = "https://github.com/shiningray/super_cache"
 
   gem.files         = `git ls-files`.split($/)
