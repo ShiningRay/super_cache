@@ -38,9 +38,10 @@ end
 
 ActionController::Base.send :include, SuperCache::Routes.url_helpers
 
-class ActiveSupport::TestCase
+class ActionController::TestCase
   setup do
     @routes = SuperCache::Routes
-    @request.host = 'test.my'
+    @request.host = 'test.host'
+    Rails.cache.clear
   end
 end
