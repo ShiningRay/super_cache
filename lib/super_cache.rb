@@ -18,11 +18,8 @@ module SuperCache
       return unless perform_caching
       options = pages.extract_options!
       options[:only] = (Array(options[:only]) + pages).flatten
-      self.cache_filter = if options.delete(:lock)
-         DogPileFilter.new
-      else
-        SimpleFilter.new
-      end
+      cache_filter_class = options.delete(:lock) ? DogPileFilter : SimpleFilter
+      self.cache_filter = cache_filter_class.new cache_options
       around_filter self.cache_filter, options
     end
 

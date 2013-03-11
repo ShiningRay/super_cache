@@ -1,12 +1,16 @@
 module SuperCache
   class SimpleFilter
+    attr_accessor :options
+    # Public
+    # canonical_path (calc path using current params)
+    #
     def initialize(options={})
-      
+      self.options = options
     end
 
     def filter(controller)
       return yield unless controller.perform_caching
-      @cache_path = controller.instance_variable_get('@caches_path') || weird_cache_path(controller)
+      @cache_path = controller.instance_variable_get('@caches_path') || controller.request.fullpath
       request = controller.request
       response = controller.response
       headers = response.headers
@@ -31,18 +35,5 @@ module SuperCache
       Rails.logger.info e.to_s
       Rails.logger.debug {e.backtrace}
     end
-
-    private
-      def weird_cache_path(controller)
-        controller.instance_eval do
-          path = File.join request.host, request.path
-          q = request.query_string
-          request.format ||= :html
-          format = request.format.to_sym
-          path = "#{path}.#{format}" if format != :html and format != :all and params[:format].blank?
-          path = "#{path}?#{q}" if !q.empty? && q =~ /=/
-          path          
-        end
-      end    
   end
 end

@@ -23,7 +23,7 @@ module SuperCache
 
       options[:controller] = controller
       options[:action] = action || block
-      options[:cache_path] ||= weird_cache_path(options)
+      options[:cache_path] ||= controller.instance_variable_get('@caches_path') || controller.request.fullpath
       options[:flag_key] = "expires_at:#{options[:cache_path]}"
       options[:expires_in] ||= 600
       options[:content] = nil
@@ -83,18 +83,6 @@ module SuperCache
         # haven't acquired lock, return stale cache
         check_cache(options)
       end
-    end
-
-    def weird_cache_path(options)
-      controller = options[:controller]
-      request = controller.request
-      path = File.join request.host, request.path
-      q = request.query_string
-      request.format ||= :html
-      format = request.format.to_sym
-      path = "#{path}.#{format}" if format != :html and format != :all and controller.params[:format].blank?
-      path = "#{path}?#{q}" if !q.empty? && q =~ /=/
-      path
     end    
   end
 end
