@@ -25,10 +25,9 @@ Just call `super_caches_page` inside your controller with the action names to be
 
 ```ruby
 class MyController < ApplicationController
-  super_caches_page :index
+  super_caches_page :index, :expires_in => 1.hour
   def index
     # action to be cached
-    @expires_in = 1.hour
   edn
 end
 ```
@@ -36,10 +35,10 @@ end
 Super_cache will store the response body into `Rails.cache`. The next time requesting
 that action will get the same result.
 
-There are several instance variables can be used for controlling the cache:
+There are several options can be passed to `super_caches_page`:
 
-* `@cache_path` control the cache key, defaults to the request uri.
-* `@expires_in` control the expiration time, now defaults to 600 sec.
+* `cache_path` control the cache key, defaults to the request uri.
+* `expires_in` control the expiration time, now defaults to 600 sec.
 
 ## Contributing
 
