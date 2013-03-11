@@ -17,17 +17,12 @@ module SuperCache
     def super_caches_page(*pages)
       return unless perform_caching
       options = pages.extract_options!
-      options[:only] = (Array(options[:only]) + pages).flatten
+      filter_options = options.extract!(:if, :unless)
+      filter_options[:only] = (Array(options[:only]) + pages).flatten
       cache_filter_class = options.delete(:lock) ? DogPileFilter : SimpleFilter
-      self.cache_filter = cache_filter_class.new cache_options
-      around_filter self.cache_filter, options
-    end
-
-    def skip_super_caches_page(*pages)
-      return unless self.cache_filter
-      options = pages.extract_options!
-      options[:only] = (Array(options[:only]) + pages).flatten
-      skip_around_filter self.cache_filter, options
+      around_filter filter_options do |controller, action|
+        cache_filter_class.filter(options.dup, controller, action)
+      end
     end
   end
 end

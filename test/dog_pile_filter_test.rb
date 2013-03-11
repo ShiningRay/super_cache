@@ -2,9 +2,7 @@ require File.expand_path('test_helper', File.dirname(__FILE__))
 require File.expand_path('my_controller', File.dirname(__FILE__))
 
 class MyController < ApplicationController
-  around_filter do |controller, action |
-    DogPileFilter.new.filter(controller, action)
-  end
+  super_caches_page :my, :lock => true
 end
 
 class DogPileFilterTest < ActionController::TestCase
