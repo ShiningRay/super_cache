@@ -43,7 +43,7 @@ module SuperCache
       end
     end  
     alias check_cache filter
-    if Gem.loaded_spec['rails'].version >= '3.0'
+    if ActionPack::VERSION::MAJOR >= 3
       def cache_hit(content)
         Rails.logger.info "Hit #{cache_path}"
         controller.response_body = content

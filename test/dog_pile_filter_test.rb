@@ -1,8 +1,8 @@
 require File.expand_path('test_helper', File.dirname(__FILE__))
 require File.expand_path('my_controller', File.dirname(__FILE__))
-
-class MyController < ApplicationController
-  super_caches_page :my, :lock => true
+#Rails.cache = ActiveSupport::Cache::MemCacheStore.new
+class MyController
+  super_caches_page :index, :lock => true
 end
 
 class DogPileFilterTest < ActionController::TestCase

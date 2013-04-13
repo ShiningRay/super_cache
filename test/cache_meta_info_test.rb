@@ -9,7 +9,7 @@ class Model
     @id = id
   end
 end
-class MyController
+class TestController < ApplicationController
   super_caches_page :index, :subject => Proc.new { @model }
   def index
     $model = @model = Model.new(10)
@@ -17,16 +17,16 @@ class MyController
   end
 end
 class CacheMetaIntoTest < ActionController::TestCase
-  tests MyController
+  tests TestController
   test "should get index" do
     get :index
     assert_response :success
     assert_equal '10', @response.body.strip
-    assert_equal '10', Rails.cache.read('test.host/my', :raw => true)
+    assert_equal '10', Rails.cache.read('test.host/test', :raw => true)
     assert_equal $model.key_for_cached_keys, 'Model:10:cached_keys'
     assert_equal $model.cached_keys.size, 1
-    assert_equal $model.cached_keys[0], 'test.host/my'
+    assert_equal $model.cached_keys[0], 'test.host/test'
     $model.clear_related_caches
-    assert_nil Rails.cache.read('test.host/my', :raw => true)
+    assert_nil Rails.cache.read('test.host/test', :raw => true)
   end 
 end
