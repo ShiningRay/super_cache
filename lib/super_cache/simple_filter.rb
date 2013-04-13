@@ -31,7 +31,7 @@ module SuperCache
         self.content_type = Mime[path.extension || :html]
       else
         self.cache_path = path
-        self.content_type = request.format
+        self.content_type = request.format.to_s.in?('', '*/*') ? Mime[:html] : request.format
       end
     end
 
@@ -43,11 +43,19 @@ module SuperCache
       end
     end  
     alias check_cache filter
-
-    def cache_hit(content)
-      Rails.logger.info "Hit #{cache_path}"
-      controller.send :render, :text => content, :content_type =>  content_type
+    if Gem.loaded_spec['rails'].version >= '3.0'
+      def cache_hit(content)
+        Rails.logger.info "Hit #{cache_path}"
+        controller.response_body = content
+        controller.content_type = self.content_type
+      end
+    else
+      def cache_hit(content)
+        Rails.logger.info "Hit #{cache_path}"
+        controller.send :render, :text => content, :content_type =>  content_type
+      end      
     end
+
 
     def cache_miss
       action.call
