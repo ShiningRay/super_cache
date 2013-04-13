@@ -58,6 +58,17 @@ module SuperCache
     def write_cache
       Rails.logger.info "Write #{cache_path}"
       Rails.cache.write(cache_path, response.body, :raw => true, :expires_in => options[:expires_in])
-    end      
+      append_cache_key_to_subject(cache_path)
+    end
+    def append_cache_key_to_subject(*keys)
+      if options[:subject].respond_to?(:call)
+        subjects = Array.wrap(controller.instance_exec(controller, &options[:subject])).flatten.select{|s|s.respond_to?(:append_cached_key)}
+        subjects.each do |s|
+          keys.each do |k|
+            s.append_cache_key k
+          end
+        end
+      end
+    end
   end
 end
