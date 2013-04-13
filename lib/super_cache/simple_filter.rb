@@ -65,7 +65,7 @@ module SuperCache
         subjects = Array.wrap(controller.instance_exec(controller, &options[:subject])).flatten.select{|s|s.respond_to?(:append_cached_key)}
         subjects.each do |s|
           keys.each do |k|
-            s.append_cache_key k
+            s.append_cached_key k
           end
         end
       end

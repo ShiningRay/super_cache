@@ -1,13 +1,14 @@
 require "super_cache/version"
 require 'uri'
 require 'fileutils'
-# for static-caching the generated html pages
+require 'super_cache/mem_cache_store_patch'
 
+# for static-caching the generated html pages
 module SuperCache
   autoload :Lock,          'super_cache/lock'
   autoload :DogPileFilter, 'super_cache/dog_pile_filter'
   autoload :SimpleFilter,  'super_cache/simple_filter'
-
+  autoload :CacheMetaInfo, 'super_cache/cache_meta_info'
   def self.included(base)
     base.class_attribute :cache_filter
     base.extend(ClassMethods)

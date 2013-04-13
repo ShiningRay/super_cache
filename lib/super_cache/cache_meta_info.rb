@@ -2,15 +2,15 @@
 # and open the template in the editor.
 module SuperCache
   module CacheMetaInfo
-    autoload RedisStore
-    autoload MemCacheStore
+    autoload :RedisStore,    'super_cache/cache_meta_info/redis_store'
+    autoload :MemCacheStore, 'super_cache/cache_meta_info/mem_cache_store'
 
     def key_for_cached_keys
       "#{self.class.name}:#{self.id}:cached_keys"
     end
 
     def clear_related_caches
-      Rails.cache.debug{cached_keys.to_a.join(' ')}
+      Rails.logger.debug{cached_keys.to_a.join(' ')}
       cached_keys.each do |key|
         Rails.cache.delete key
       end
