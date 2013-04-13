@@ -49,6 +49,7 @@ module SuperCache
       expires_in = (options[:expires_in] || 600).to_i
       Rails.cache.write(flag_key, expires_in, :raw => true, :expires_in => expires_in)
       Rails.cache.write(cache_path, response.body, :raw => true, :expires_in => expires_in * 2)
+      append_cache_key_to_subject(flag_key, cache_path)
     end
   end
 end

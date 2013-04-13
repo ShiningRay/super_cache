@@ -5,4 +5,5 @@ source 'http://rubygems.org'
 gemspec
 gem 'rake'
 gem 'rails', '~> 3.1'
+gem 'memcache-client'
 #gem 'mocha', :require => false
